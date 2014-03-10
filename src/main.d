@@ -5,8 +5,6 @@ import Cruscal;
 
 import std.stdio;
 
-int MAX_NODES = 1000;
-
 struct Link
 {
 	int from;
@@ -25,9 +23,14 @@ int main()
 	writeln("Raw data matrix");
 	writeln("======================================");
 	double[][] rawData = getData("testdata.csv");
+	Link[] data = packData(rawData);
+	setN(rawData.length);
 	foreach(i;rawData)
 		writeln(i); 
 	writeln("======================================");
-	cruscal(rawData);
+	Link[] path = cruscal(data);
+	checkPath(path);
+	foreach(l;path)
+		writeln("(",l.from+1,",",l.to+1,")\t->\t",l.value);
 	return 0;
 }
