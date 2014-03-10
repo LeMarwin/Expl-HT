@@ -1,28 +1,33 @@
 module ExplMain;
 
-import std.stdio;
 import CsvParse;
+import Cruscal;
+
+import std.stdio;
+
+int MAX_NODES = 1000;
 
 struct Link
 {
 	int from;
 	int to;
-	int value;
-}
-
-Link[] packData(double[][] raw)
-{
-	if(raw.length==0)
-		
-	if(raw.length!=raw[0])
+	double value;
+	this(int f, int t, double v)
+	{
+		from = f;
+		to = t;
+		value = v;
+	}
 }
 
 int main()
 {
-	writeln("Gotta make homework!");
+	writeln("Raw data matrix");
+	writeln("======================================");
 	double[][] rawData = getData("testdata.csv");
-	Link[] data = packData(rawData);
 	foreach(i;rawData)
 		writeln(i); 
+	writeln("======================================");
+	cruscal(rawData);
 	return 0;
 }
