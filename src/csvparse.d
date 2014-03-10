@@ -1,4 +1,4 @@
-module Gen.CsvParse;
+module CsvParse;
 
 import std.csv;
 import std.stdio;
