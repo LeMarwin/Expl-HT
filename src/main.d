@@ -1,9 +1,14 @@
 module ExplMain;
 
 import CsvParse;
+import Shortest;
 import Cruscal;
 
 import std.stdio;
+import std.math;
+import std.algorithm;
+
+int NODE_NUM;
 
 struct Link
 {
@@ -18,19 +23,77 @@ struct Link
 	}
 }
 
+double sumPath(Link[] path)
+{
+	double sum = 0;
+	foreach(l;path)
+		sum+=l.value;
+	return sum;
+}
+
+Link[] packData(double[][] raw)
+{
+	if(raw.length==0)
+		throw new Exception("No data");
+	if(raw.length!=raw[0].length)
+		throw new Exception("Non-squared matrix");
+	int N = raw.length; 
+	Link[] packedData;
+	for(int i=0;i<N;i++)
+	{
+		for(int j=0;j<=i;j++)
+		{
+			if((raw[i][j]==raw[j][i])||(isNaN(raw[i][j])&&isNaN(raw[j][i])))
+			{
+				if(!isNaN(raw[i][j]))
+					packedData~=Link(j,i,raw[i][j]);
+				else{}
+			}
+			else
+				throw new Exception("Non-symmetric matrix");
+		}
+	}
+	sort!("a.from<b.from")(packedData);
+	sort!("a.value<b.value")(packedData);
+	return packedData;
+}
+
 int main()
 {
-	writeln("Raw data matrix");
-	writeln("======================================");
 	double[][] rawData = getData("testdata.csv");
 	Link[] data = packData(rawData);
-	setN(rawData.length);
+	NODE_NUM = data.length;
+
+	writeln("\nRaw data matrix");
+	writeln("======================================");
 	foreach(i;rawData)
 		writeln(i); 
 	writeln("======================================");
-	Link[] path = cruscal(data);
-	checkPath(path);
-	foreach(l;path)
-		writeln("(",l.from+1,",",l.to+1,")\t->\t",l.value);
+
+	writeln("\nKruskal algorithm:");
+	writeln("Arc\tvalue");
+	writeln("--------------------------------------");
+	foreach(l;data)
+		writeln("(",l.from+1,",",l.to+1,")\t",l.value);
+	writeln("======================================\n");
+
+	Link[] cPath = cruscal(data);
+	Link[] tempPath = cPath.dup;
+	formatPath(cPath);
+	if(tempPath.length==cPath.length)
+		printPath(cPath,1);
+	else
+		printPath(tempPath,0);
+
+
+	int[] pathClosest = closest(data);
+	writeln("\nClosest first");
+	write("Path:\t",pathClosest[0]+1);
+	foreach(p;pathClosest[1..$])
+		write("-",p+1);
+	writeln;
+
+
+
 	return 0;
 }

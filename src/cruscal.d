@@ -5,79 +5,73 @@ import std.stdio;
 import std.math;
 import std.algorithm;
 import std.exception;
+import std.conv;
 
-int[] p;
-int[] rank;
-int N;
+// 	Disjoit sets implementation
+	int[] p;
+	int[] rank;
 
-void setN(int n)
-{
-	N = n;
-}
 
-void makeSet(int x)
-{
-	p[x] = x;
-	rank[x] = 0;
-}
-
-int findSet(int x)
-{
-	if(p[x]==x)
-		return x;
-	else
+	void makeSet(int x)
 	{
-		p[x]=findSet(p[x]);
-		return p[x];
+		p[x] = x;
+		rank[x] = 0;
 	}
-}
 
-void uniteSets(int a, int b)
-{
-	if((a=findSet(a))==(b=findSet(b)))
-		return;
-	if(rank[a]<rank[b])
-		p[a] = b;
-	else
-		p[b] = a;
-	if(rank[a]==rank[b])
-		++rank[a];
-}
-
-Link[] packData(double[][] raw)
-{
-	if(raw.length==0)
-		throw new Exception("No data");
-	if(raw.length!=raw[0].length)
-		throw new Exception("Non-squared matrix");
-	int N = raw.length; 
-	Link[] packedData;
-	for(int i=0;i<N;i++)
+	int findSet(int x)
 	{
-		for(int j=0;j<=i;j++)
+		if(p[x]==x)
+			return x;
+		else
 		{
-			if((raw[i][j]==raw[j][i])||(isNaN(raw[i][j])&&isNaN(raw[j][i])))
-			{
-				if(!isNaN(raw[i][j]))
-					packedData~=Link(j,i,raw[i][j]);
-				else{}
-			}
-			else
-				throw new Exception("Non-symmetric matrix");
+			p[x]=findSet(p[x]);
+			return p[x];
 		}
 	}
-	sort!("a.from<b.from")(packedData);
-	sort!("a.value<b.value")(packedData);
-	return packedData;
+
+	void uniteSets(int a, int b)
+	{
+		if((a=findSet(a))==(b=findSet(b)))
+			return;
+		if(rank[a]<rank[b])
+			p[a] = b;
+		else
+			p[b] = a;
+		if(rank[a]==rank[b])
+			++rank[a];
+	}
+/////////////////////////////////
+
+//May have bugs
+Link pickLink(ref Link[] path, int a)
+{
+	for(int i=0;i<path.length;i++)
+	{
+		if(path[i].from==a)
+		{
+			int b = path[i].to;
+			path[i].from=-1;
+			path[i].to=-1;
+			return Link(a,b,path[i].value);
+		}
+		if(path[i].to==a)
+		{
+			int b = path[i].from;
+			path[i].to=-1;
+			path[i].from=-1;
+			return Link(a,b,path[i].value);
+		}
+	}
+	return Link(-1,-1,-1);
 }
 
+//Cruscal's algorithm
 Link[] cruscal(Link[] data)
 {
-	//Link[] data = packData(rawData);
 	Link[] path = [];
 	p = [];
 	rank = [];
-	for(int i=0;i<N;i++)		//This is makeSet, actually;
+	for(int i=0;i<NODE_NUM;i++)		//This is makeSet, actually;
 	{
 		p~=i;
 		rank~=0;
@@ -91,33 +85,56 @@ Link[] cruscal(Link[] data)
 			uniteSets(l.from, l.to);
 		}
 	}
+	writeln(path);
 	return path;
 }
 
-void checkPath(Link[] path)
+//Sort path
+void formatPath(ref Link[] path)
 {
-	int[N] temp;
-	int a = 0;
+	int[] temp;
+	for(int i=0;i<NODE_NUM;i++)
+		temp~=0;
+	int s=NODE_NUM+1;
+	string res = "";
+ 	//Fill incidences
 	foreach(l;path)
 	{
 		temp[l.from]++;
 		temp[l.to]++;
 	}
-	foreach(t;temp)
+	//Find starting node
+	for(int i=0;i<NODE_NUM;i++)
+		if(temp[i]==1)
+			if(i<s)
+				s = i;
+	Link buff = pickLink(path, s);	
+	Link[] fPath=[];
+	fPath~=buff;
+	while(temp[buff.to]!=1)
 	{
-		if(t==0)
-			throw new Exception("Node with no links!");
-		if(t==1)
-			if(a<2)
-				a++;
-			else
-				throw new Exception("3+ nodes with one link");
-		if(t>2)
-			throw new Exception("Node with 3+ links");
+		buff = pickLink(path,buff.to);
+		fPath~=buff;
 	}
+	path = fPath;
 }
 
-string formatPath(Link[] path)
+//Print path
+void printPath(Link[] path, bool c)
 {
-	return ";";
+	writeln("\nArc\tValue");
+	writeln("--------------------------------------");
+	string res = "";
+	double sum = 0;
+	res~=to!string(path[0].from+1);
+	foreach(l;path)
+	{
+		res~="-"~to!string(l.to+1);
+		writeln("(",l.from+1,",",l.to+1,")\t",l.value);
+		sum+=l.value;
+	}
+	if(c)
+		writeln("Path:\t",res);
+	writeln("Value:\t",sum);
+	writeln("======================================");
 }
