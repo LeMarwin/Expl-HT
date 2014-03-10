@@ -85,7 +85,6 @@ Link[] cruscal(Link[] data)
 			uniteSets(l.from, l.to);
 		}
 	}
-	writeln(path);
 	return path;
 }
 
