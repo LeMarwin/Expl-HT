@@ -70,13 +70,13 @@ int main()
 		writeln(i); 
 	writeln("======================================");
 
-	writeln("\nKruskal algorithm:");
-	writeln("Arc\tvalue");
+	writeln("\nArc\tvalue");
 	writeln("--------------------------------------");
 	foreach(l;data)
 		writeln("(",l.from+1,",",l.to+1,")\t",l.value);
 	writeln("======================================\n");
 
+	writeln("\nKruskal algorithm:");
 	Link[] cPath = cruscal(data);
 	Link[] tempPath = cPath.dup;
 	formatPath(cPath);
@@ -91,9 +91,8 @@ int main()
 	write("Path:\t",pathClosest[0]+1);
 	foreach(p;pathClosest[1..$])
 		write("-",p+1);
-	writeln;
+	writeln("-",pathClosest[0]+1);
 
-
-
+	writeln(calcValue(data, pathClosest));
 	return 0;
 }

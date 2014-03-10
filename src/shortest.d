@@ -7,33 +7,6 @@ import std.algorithm;
 import std.exception;
 import std.conv;
 
-Link[] packData(double[][] raw)
-{
-	if(raw.length==0)
-		throw new Exception("No data");
-	if(raw.length!=raw[0].length)
-		throw new Exception("Non-squared matrix");
-	int N = raw.length; 
-	Link[] packedData;
-	for(int i=0;i<N;i++)
-	{
-		for(int j=0;j<=i;j++)
-		{
-			if((raw[i][j]==raw[j][i])||(isNaN(raw[i][j])&&isNaN(raw[j][i])))
-			{
-				if(!isNaN(raw[i][j]))
-					packedData~=Link(j,i,raw[i][j]);
-				else{}
-			}
-			else
-				throw new Exception("Non-symmetric matrix");
-		}
-	}
-	sort!("a.from<b.from")(packedData);
-	sort!("a.value<b.value")(packedData);
-	return packedData;
-}
-
 int[] closest(Link[] data)
 {
 	int[] path;
@@ -102,8 +75,23 @@ int getIndex(Link[] data, int a, int b)
 
 double getValue(Link[] data, int a, int b)
 {
-	for(int i=0;i<data.length;i++)
-		if((data[i].from==a)&&(data[i].to==b))
-			return data[i].value;
+	foreach(l;data)
+	{
+		if((l.to==a)&&(l.from==b))
+			return l.value;
+		if((l.to==b)&&(l.from==a))
+			return l.value;
+	}
 	return 0;
+}
+
+double calcValue(Link[] data, int[] path)
+{
+	double sum = 0;
+	for(int i=0;i<path.length-1;i++)
+	{
+		sum+=getValue(data,path[i],path[i+1]);
+	}
+	sum+=getValue(data,path[$-1],path[0]);
+	return sum;
 }
